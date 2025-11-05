@@ -1,6 +1,6 @@
-# ✨PySpark
+# ⚡PySpark
 
-## 1️ PySpark Overview
+##  PySpark Overview
 
 **PySpark** is the Python library for using **Apache Spark**, which is a big data processing framework.  
 It allows you to write Python code to run on the Spark engine, which can process massive datasets in parallel.
@@ -47,7 +47,7 @@ Spark Engine (runs on JVM)
 
 ---
 
-#  2️ Spark Architecture
+# 💥 Spark Architecture
 
 ## 2.1 Spark Architecture (Core View)
 
@@ -75,7 +75,7 @@ When you run a PySpark script:
 4. The Driver sends **Tasks** to Executors.  
 5. Executors compute results and send them back to Driver.
 
-📊 **Visualization:**
+ **Visualization:**
 
 ```
 Driver → Cluster Manager → Executors → Tasks → Results
@@ -83,7 +83,7 @@ Driver → Cluster Manager → Executors → Tasks → Results
 
 ---
 
-# 3️ Spark Components
+#  💥 Spark Components
 
 | **Component** | **Description** |
 |----------------|-----------------|
@@ -95,7 +95,7 @@ Driver → Cluster Manager → Executors → Tasks → Results
 
 ---
 
-# 4️ SparkSession
+#  💥 SparkSession
 
 ## 4.1 What is SparkSession?
 
@@ -132,7 +132,7 @@ spark.stop()
 
 ---
 
-# 5️ DataFrame API
+#  💥 DataFrame API
 
 ## 5.1 Overview
 
@@ -174,7 +174,7 @@ df.show()
 
 ---
 
-# 6️ Transformations and Actions
+#  💥 Transformations and Actions
 
 ## 6.1 Key Idea
 
