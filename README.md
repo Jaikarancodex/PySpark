@@ -235,4 +235,143 @@ filtered.show()                       # Action
 
 ```
 🔥 Write once → Run anywhere → Scale infinitely.
+```
+---
 
+# 💥 PySpark RDDs (Resilient Distributed Datasets)
+
+## 7.1 Overview of RDDs
+**RDD (Resilient Distributed Dataset)** is the fundamental data structure in Spark.
+
+- **Resilient** → Fault-tolerant; can recover lost data using lineage (transformation history).  
+- **Distributed** → Data is split into partitions and processed across multiple nodes.  
+- **Dataset** → Represents a collection of records.
+
+**Creation Methods:**
+```python
+# Example 1: From a Python collection
+data = [1, 2, 3, 4, 5]
+rdd = sc.parallelize(data)
+
+# Example 2: From external data
+rdd = sc.textFile("data.txt")
+
+# Transformation + Action
+rdd.map(lambda x: x * 2).collect()
+```
+
+---
+
+## 7.2 Differences Between RDDs and DataFrames
+
+| Feature | **RDD** | **DataFrame** |
+|----------|----------|---------------|
+| Type | Low-level data structure | High-level abstraction (like SQL table) |
+| Data | Unstructured or semi-structured | Structured (rows + named columns) |
+| Optimization | No automatic optimization | Optimized by Catalyst engine |
+| Ease of Use | Functional (map, filter, reduce) | Declarative (select, where, groupBy) |
+| Performance | Slower (no schema, no optimization) | Faster (Catalyst + Tungsten) |
+| Use Case | Fine-grained control | SQL-style analytics |
+
+---
+
+# 💥 PySpark Data Structures
+
+PySpark provides 3 major data abstractions:
+
+1. **RDD** – Core distributed data structure.  
+2. **DataFrame** – Structured abstraction built on RDDs with schema support.  
+3. **Dataset** – (Available in Scala/Java only, not PySpark).
+
+Hierarchy:
+```
+RDD → DataFrame → Dataset (typed)
+```
+
+---
+
+# 💥 SparkContext
+
+## 9.1 Role of SparkContext
+- Acts as the **gateway** to the Spark cluster.
+- Manages RDD creation, job scheduling, and cluster communication.
+- Every PySpark app needs a SparkContext (usually created automatically by SparkSession).
+
+## 9.2 Creating and Configuring SparkContext
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder     .appName("MyApp")     .master("local[*]")     .getOrCreate()
+
+sc = spark.sparkContext
+```
+
+**Configuration Options:**
+- `.appName("MyApp")` → Identifies your job.
+- `.master("local[*]")` → Runs locally using all CPU cores.
+- Additional configs like memory, executor cores, etc.
+
+---
+
+# 💥 10. PySpark DataFrames
+
+## 10.1 Introduction
+- A **DataFrame** is a distributed collection of rows with **named columns** (like a SQL table or Pandas DataFrame).  
+- Built on top of RDDs, but with schema and optimization using **Catalyst Engine**.
+- Can be created from:
+  - RDDs
+  - Python collections
+  - External sources (CSV, JSON, Parquet)
+  - Databases
+
+**Example:**
+```python
+data = [("Karan", 24), ("Anu", 23)]
+df = spark.createDataFrame(data, ["name", "age"])
+df.show()
+```
+
+---
+
+## 10.2 DataFrame Operations
+
+#### Basic Operations
+```python
+df.show()                 # Display data
+df.printSchema()          # Display schema
+df.select("name").show()  # Select specific column
+df.filter(df.age > 23).show()  # Filter rows
+df.groupBy("age").count().show()  # Group and count
+```
+
+#### Aggregations
+```python
+from pyspark.sql.functions import avg, max, min
+
+df.select(avg("age")).show()
+df.groupBy("age").agg(max("age"), min("age")).show()
+```
+
+#### Chained Operations
+```python
+df.filter(df.age > 23).select("name").show()
+```
+
+---
+
+##  Summary
+
+| Concept | Description |
+|----------|-------------|
+| **RDD** | Core distributed abstraction, resilient and parallel |
+| **DataFrame** | High-level, structured, optimized abstraction |
+| **SparkContext** | Bridge between PySpark app and Spark cluster |
+| **SparkSession** | Unified entry point for creating DataFrames and SparkContext |
+| **DataFrame Ops** | Easy SQL-like transformations and aggregations |
+
+---
+
+###  Quick Tip
+- Use **RDDs** when you need low-level control.  
+- Use **DataFrames** for performance, readability, and SQL-style analytics.  
+- Always initialize Spark through `SparkSession` in PySpark.
