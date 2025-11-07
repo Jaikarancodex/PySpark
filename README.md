@@ -214,7 +214,7 @@ filtered.show()                       # Action
 
 ---
 
-#  Summary Table
+## ⚡ Summary Table
 
 | **Concept** | **Description** |
 |--------------|-----------------|
@@ -359,7 +359,7 @@ df.filter(df.age > 23).select("name").show()
 
 ---
 
-##  Summary
+## ⚡ Summary
 
 | Concept | Description |
 |----------|-------------|
@@ -484,7 +484,7 @@ df.persist(StorageLevel.MEMORY_AND_DISK)
 
 ---
 
-### Summary Table
+### ⚡ Summary Table
 | Concept | Command | Purpose |
 |----------|----------|----------|
 | Register Temp SQL Table | `createOrReplaceTempView("name")` | Query DF using SQL |
@@ -715,7 +715,7 @@ df.columns
 
 ---
 
-##  Summary Table
+## ⚡ Summary Table
 | Function | Use | Returns |
 |-----------|-----|----------|
 | `.show()` | View first 20 rows | Prints to console |
@@ -734,4 +734,351 @@ df.columns
 
 ### Quick Memory Trick
 #####  “show what you see, collect what you need, printSchema before you proceed.”
+
+---
+
+# 💥 PySpark String Functions (1–16)
+
+## Base DataFrame
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.appName("String_Functions").getOrCreate()
+
+data = [("  karan  ", "IT-dept", "karan@company.com"),
+        ("ravi", "HR-dept", "ravi@company.com"),
+        ("neha", "Finance-dept", "neha@company.com")]
+
+df = spark.createDataFrame(data, ["Name", "Department", "Email"])
+df.show(truncate=False)
+```
+
+**Output:**
+```
++---------+-------------+-------------------+
+|Name     |Department   |Email              |
++---------+-------------+-------------------+
+|  karan  |IT-dept      |karan@company.com  |
+|ravi     |HR-dept      |ravi@company.com   |
+|neha     |Finance-dept |neha@company.com   |
++---------+-------------+-------------------+
+```
+
+---
+
+### 1.1 `upper()`
+Converts text to uppercase.
+```python
+df.select(upper(col("Name")).alias("Upper_Name")).show()
+```
+**Output:** `KARAN`, `RAVI`, `NEHA`
+
+---
+
+### 1.2 `trim()`
+Removes spaces from both ends.
+```python
+df.select(trim(col("Name")).alias("Trimmed")).show()
+```
+**Output:** `karan`, `ravi`, `neha`
+
+---
+
+### 1.3 `ltrim()`
+Removes leading (left) spaces.
+```python
+df.select(ltrim(col("Name")).alias("Left_Trimmed")).show()
+```
+
+---
+
+### 1.4 `rtrim()`
+Removes trailing (right) spaces.
+```python
+df.select(rtrim(col("Name")).alias("Right_Trimmed")).show()
+```
+
+---
+
+### 1.5 `substring_index()`
+Splits a string by a delimiter and returns part before or after it.
+```python
+df.select(substring_index(col("Email"), "@", 1).alias("User_Name")).show()
+```
+ **Output:** `karan`, `ravi`, `neha`
+ **Note:** `substring_index(col, '@', 1)` returns part before first `@`.
+
+---
+
+### 1.6 `substring()`
+Extracts substring from position (1-based index).
+```python
+df.select(substring(col("Department"), 1, 2).alias("Dept_Code")).show()
+```
+ **Output:** `IT`, `HR`, `Fi`
+
+---
+
+### 1.7 `split()`
+Splits a string into an array using a delimiter.
+```python
+df.select(split(col("Department"), "-").alias("Split_Dept")).show(truncate=False)
+```
+ **Output:** `[['IT', 'dept'], ['HR', 'dept'], ['Finance', 'dept']]`
+
+---
+
+### 1.8 `repeat()`
+Repeats a string n times.
+```python
+df.select(repeat(col("Name"), 2).alias("Repeated")).show()
+```
+ **Output:** `karankaran`, `raviravi`, `nehaneha`
+
+---
+
+### 1.9 `rpad()`
+Pads string on right to given length with a pattern.
+```python
+df.select(rpad(col("Name"), 10, "*").alias("Right_Padded")).show()
+```
+ **Output:** `karan*****`
+
+---
+
+### 1.10 `lpad()`
+Pads string on left to given length.
+```python
+df.select(lpad(col("Name"), 10, "#").alias("Left_Padded")).show()
+```
+ **Output:** `#####karan`
+
+---
+
+### 1.11 `regex_replace()`
+Replaces part of a string using regex.
+```python
+df.select(regex_replace(col("Department"), "-dept", "").alias("Clean_Dept")).show()
+```
+**Output:** `IT`, `HR`, `Finance`
+
+---
+
+### 1.12 `lower()`
+Converts text to lowercase.
+```python
+df.select(lower(col("Department")).alias("Lower_Dept")).show()
+```
+
+---
+
+### 1.13 `regex_extract()`
+Extracts matching substring from a regex pattern.
+```python
+df.select(regex_extract(col("Email"), r'@(\\w+)', 1).alias("Domain")).show()
+```
+ **Output:** `company`
+ **Explanation:** Extracts text between `@` and `.`
+
+---
+
+### 1.14 `length()`
+Returns length of a string.
+```python
+df.select(length(col("Name")).alias("Length")).show()
+```
+
+---
+
+### 1.15 `instr()`
+Finds position (index) of substring.
+```python
+df.select(instr(col("Email"), "@").alias("At_Index")).show()
+```
+ **Output:** `6`
+
+---
+
+### 1.16 `initcap()`
+Converts text to title case (first letter uppercase).
+```python
+df.select(initcap(col("Name")).alias("Title_Case")).show()
+```
+**Output:** `Karan`, `Ravi`, `Neha`
+
+---
+
+## ⚡ Summary Table
+| Function | Purpose | Example |
+|-----------|----------|----------|
+| `upper()` | To uppercase | `upper(col("Name"))` |
+| `trim()` | Remove spaces | `trim(col("Name"))` |
+| `ltrim()` | Remove left spaces | `ltrim(col("Name"))` |
+| `rtrim()` | Remove right spaces | `rtrim(col("Name"))` |
+| `substring_index()` | Split & take part | `substring_index(col("Email"), "@", 1)` |
+| `substring()` | Take substring | `substring(col("Dept"), 1, 3)` |
+| `split()` | Split string into array | `split(col("Dept"), "-")` |
+| `repeat()` | Repeat text | `repeat(col("Name"), 2)` |
+| `rpad()` | Pad right side | `rpad(col("Name"), 10, "*")` |
+| `lpad()` | Pad left side | `lpad(col("Name"), 10, "#")` |
+| `regex_replace()` | Replace pattern | `regex_replace(col("Dept"), "-dept", "")` |
+| `lower()` | Lowercase | `lower(col("Dept"))` |
+| `regex_extract()` | Extract regex pattern | `regex_extract(col("Email"), "@(\\w+)", 1)` |
+| `length()` | String length | `length(col("Name"))` |
+| `instr()` | Find substring position | `instr(col("Email"), "@")` |
+| `initcap()` | Title case | `initcap(col("Name"))` |
+
+---
+
+###  Quick Trick to Remember
+ **trim → clean, split → break, regex → pattern, pad → shape, initcap → polish**
+
+ ---
+
+ # 💥 PySpark Numeric Functions
+
+## Base DataFrame
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.appName("Numeric_Functions").getOrCreate()
+
+data = [("Karan", 50000.567),
+        ("Ravi", 60000.345),
+        ("Neha", 70000.789),
+        ("Arjun", 45000.111),
+        ("Meena", 80000.955)]
+
+df = spark.createDataFrame(data, ["Name", "Salary"])
+df.show()
+```
+
+ **Output:**
+```
++------+--------+
+|  Name|  Salary|
++------+--------+
+| Karan|50000.57|
+|  Ravi|60000.35|
+|  Neha|70000.79|
+| Arjun|45000.11|
+| Meena|80000.96|
++------+--------+
+```
+
+---
+
+### 2.1 SUM()
+Adds all numeric values together.
+```python
+df.select(sum("Salary").alias("Total_Salary")).show()
+```
+ **Output:**
+```
++------------+
+|Total_Salary|
++------------+
+| 305002.766 |
++------------+
+```
+💬 **Use:** Get total or aggregate sum.
+
+---
+
+### 2.2 AVG()
+Calculates average value.
+```python
+df.select(avg("Salary").alias("Average_Salary")).show()
+```
+ **Output:**
+```
++--------------+
+|Average_Salary|
++--------------+
+|       61000.55|
++--------------+
+```
+ **Use:** Get mean or average.
+
+---
+
+### 2.3 MIN()
+Finds the smallest number.
+```python
+df.select(min("Salary").alias("Min_Salary")).show()
+```
+ **Output:** `45000.11`  
+ **Use:** Find minimum value.
+
+---
+
+### 2.4 MAX()
+Finds the largest number.
+```python
+df.select(max("Salary").alias("Max_Salary")).show()
+```
+ **Output:** `80000.96`  
+ **Use:** Find maximum value.
+
+---
+
+### 2.5 ROUND()
+Rounds numeric value to given decimal places.
+```python
+df.select(round(col("Salary"), 1).alias("Rounded_Salary")).show()
+```
+ **Output:**
+```
++--------------+
+|Rounded_Salary|
++--------------+
+|       50000.6|
+|       60000.3|
+|       70000.8|
+|       45000.1|
+|       80100.0|
++--------------+
+```
+**Use:** Round numbers.
+
+---
+
+### 2.6 ABS()
+Returns the absolute (positive) value.
+```python
+df2 = spark.createDataFrame([("Karan", -5000), ("Ravi", 3000)], ["Name", "Change"])
+df2.select(col("Name"), abs(col("Change")).alias("Absolute_Value")).show()
+```
+ **Output:**
+```
++-----+--------------+
+| Name|Absolute_Value|
++-----+--------------+
+|Karan|          5000|
+| Ravi|          3000|
++-----+--------------+
+```
+ **Use:** Convert negatives to positives.
+
+---
+
+## ⚡ Summary Table
+| Function | Purpose | Example |
+|-----------|----------|----------|
+| `sum()` | Total | `sum("Salary")` |
+| `avg()` | Mean | `avg("Salary")` |
+| `min()` | Lowest | `min("Salary")` |
+| `max()` | Highest | `max("Salary")` |
+| `round()` | Round to decimals | `round(col("Salary"), 2)` |
+| `abs()` | Absolute value | `abs(col("Change"))` |
+
+---
+
+###  Quick Trick to Remember
+ **“Sum for total, Avg for level, Min/Max for range, Round for beauty, Abs for balance.”**
+
+
+
 
