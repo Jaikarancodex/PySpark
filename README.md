@@ -970,7 +970,7 @@ df.show()
 
 ---
 
-### 2.1 SUM()
+### 1.1 SUM()
 Adds all numeric values together.
 ```python
 df.select(sum("Salary").alias("Total_Salary")).show()
@@ -983,11 +983,11 @@ df.select(sum("Salary").alias("Total_Salary")).show()
 | 305002.766 |
 +------------+
 ```
-💬 **Use:** Get total or aggregate sum.
+ **Use:** Get total or aggregate sum.
 
 ---
 
-### 2.2 AVG()
+### 1.2 AVG()
 Calculates average value.
 ```python
 df.select(avg("Salary").alias("Average_Salary")).show()
@@ -1004,7 +1004,7 @@ df.select(avg("Salary").alias("Average_Salary")).show()
 
 ---
 
-### 2.3 MIN()
+### 1.3 MIN()
 Finds the smallest number.
 ```python
 df.select(min("Salary").alias("Min_Salary")).show()
@@ -1014,7 +1014,7 @@ df.select(min("Salary").alias("Min_Salary")).show()
 
 ---
 
-### 2.4 MAX()
+### 1.4 MAX()
 Finds the largest number.
 ```python
 df.select(max("Salary").alias("Max_Salary")).show()
@@ -1024,7 +1024,7 @@ df.select(max("Salary").alias("Max_Salary")).show()
 
 ---
 
-### 2.5 ROUND()
+### 1.5 ROUND()
 Rounds numeric value to given decimal places.
 ```python
 df.select(round(col("Salary"), 1).alias("Rounded_Salary")).show()
@@ -1045,7 +1045,7 @@ df.select(round(col("Salary"), 1).alias("Rounded_Salary")).show()
 
 ---
 
-### 2.6 ABS()
+### 1.6 ABS()
 Returns the absolute (positive) value.
 ```python
 df2 = spark.createDataFrame([("Karan", -5000), ("Ravi", 3000)], ["Name", "Change"])
@@ -1079,6 +1079,218 @@ df2.select(col("Name"), abs(col("Change")).alias("Absolute_Value")).show()
 ###  Quick Trick to Remember
  **“Sum for total, Avg for level, Min/Max for range, Round for beauty, Abs for balance.”**
 
+---
+
+# 💥 Date and Time Functions
+
+We'll use this base DataFrame 👇
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.appName("Date_Time_Functions").getOrCreate()
+
+data = [("Karan", "2025-01-01"), ("Ravi", "2024-12-25"), ("Neha", "2023-06-15")]
+df = spark.createDataFrame(data, ["Name", "Joining_Date"])
+df.show()
+```
+**Output:**
+```
++-----+------------+
+|Name |Joining_Date|
++-----+------------+
+|Karan|2025-01-01  |
+|Ravi |2024-12-25  |
+|Neha |2023-06-15  |
++-----+------------+
+```
+
+### 1.1 `CURRENT_DATE()`
+Returns the current system date.
+```python
+df.select(current_date().alias("Today")).show()
+```
+
+### 1.2 `CURRENT_TIMESTAMP()`
+Returns current system date and time.
+```python
+df.select(current_timestamp().alias("Current_Time")).show()
+```
+
+### 1.3 `DATE_ADD()`
+Adds a number of days to a date.
+```python
+df.select(date_add(col("Joining_Date"), 10).alias("After_10_Days")).show()
+```
+
+### 1.4 `DATEDIFF()`
+Calculates difference between two dates in days.
+```python
+df.select(datediff(current_date(), col("Joining_Date")).alias("Days_Since_Join")).show()
+```
+
+### 1.5 `YEAR()`
+Extracts year from date.
+```python
+df.select(year(col("Joining_Date")).alias("Year")).show()
+```
+
+### 1.6 `MONTH()`
+Extracts month number from date.
+```python
+df.select(month(col("Joining_Date")).alias("Month")).show()
+```
+
+### 1.7 `DAY()`
+Extracts day of month.
+```python
+df.select(dayofmonth(col("Joining_Date")).alias("Day")).show()
+```
+
+### 1.8 `TO_DATE()`
+Converts string to date type.
+```python
+df.select(to_date(col("Joining_Date"), "yyyy-MM-dd").alias("To_Date")).printSchema()
+```
+
+### 1.9 `DATE_FORMAT()`
+Formats date into custom string format.
+```python
+df.select(date_format(col("Joining_Date"), "MMM dd, yyyy").alias("Formatted_Date")).show()
+```
+
+---
+
+# 💥  Aggregate Functions
+
+We'll use 👇
+```python
+data = [("IT", 50000), ("HR", 60000), ("Finance", 70000), ("IT", 55000), ("HR", 65000)]
+df = spark.createDataFrame(data, ["Dept", "Salary"])
+```
+
+### 1.1 `mean()` / 2.2 `avg()`
+Calculate average value.
+```python
+df.groupBy("Dept").agg(mean("Salary").alias("Mean_Salary")).show()
+```
+
+### 1.3 `collect_list()`
+Returns list of all values in group (duplicates included).
+```python
+df.groupBy("Dept").agg(collect_list("Salary").alias("Salaries")).show(truncate=False)
+```
+
+### 1.4 `collect_set()`
+Returns unique values as a list.
+```python
+df.groupBy("Dept").agg(collect_set("Salary").alias("Unique_Salaries")).show(truncate=False)
+```
+
+### 1.5 `countDistinct()`
+Counts distinct values.
+```python
+df.select(countDistinct("Salary").alias("Unique_Salary_Count")).show()
+```
+
+### 1.6 `count()`
+Counts total rows or values.
+```python
+df.groupBy("Dept").count().show()
+```
+
+### 1.7 `first()` / 2.8 `last()`
+Return first or last value in a column.
+```python
+df.agg(first("Salary").alias("First_Salary"), last("Salary").alias("Last_Salary")).show()
+```
+
+### 1.9 `max()` / 1.10 `min()`
+Get highest or lowest value.
+```python
+df.select(max("Salary").alias("Max_Salary"), min("Salary").alias("Min_Salary")).show()
+```
+
+### 1.11 `sum()`
+Returns total of numeric column.
+```python
+df.groupBy("Dept").agg(sum("Salary").alias("Total_Salary")).show()
+```
+
+---
+
+# 💥 Joins in PySpark
+
+We'll use two DataFrames 👇
+```python
+emp = [(1, "Karan", 1), (2, "Ravi", 2), (3, "Neha", 3), (4, "Meena", 2)]
+dept = [(1, "IT"), (2, "HR"), (3, "Finance")]
+emp_df = spark.createDataFrame(emp, ["Emp_ID", "Name", "Dept_ID"])
+dept_df = spark.createDataFrame(dept, ["Dept_ID", "Dept_Name"])
+```
+
+### 1.1 Inner Join
+Returns matching rows from both tables.
+```python
+emp_df.join(dept_df, "Dept_ID", "inner").show()
+```
+
+### 1.2 Cross Join
+Cartesian product — all combinations.
+```python
+emp_df.crossJoin(dept_df).show()
+```
+
+### 1.3 Outer Join (Full Outer)
+Returns all rows from both DataFrames, null if no match.
+```python
+emp_df.join(dept_df, "Dept_ID", "outer").show()
+```
+
+### 1.4 Left Join
+All rows from left DataFrame, matched data from right.
+```python
+emp_df.join(dept_df, "Dept_ID", "left").show()
+```
+
+### 1.5 Right Join
+All rows from right DataFrame, matched data from left.
+```python
+emp_df.join(dept_df, "Dept_ID", "right").show()
+```
+
+### 1.6 Left Semi Join
+Keeps only rows from left DataFrame that have a match in right.
+```python
+emp_df.join(dept_df, "Dept_ID", "left_semi").show()
+```
+
+### 1.7 Left Anti Join
+Keeps rows from left DataFrame that **don’t** have a match in right.
+```python
+emp_df.join(dept_df, "Dept_ID", "left_anti").show()
+```
+
+---
+
+## Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Date & Time** | `CURRENT_DATE()` | Get current date |
+| | `DATEDIFF()` | Days between two dates |
+| | `DATE_ADD()` | Add days |
+| | `DATE_FORMAT()` | Format date string |
+| **Aggregate** | `sum()` / `avg()` / `mean()` | Total or average |
+| | `collect_list()` / `collect_set()` | List / Unique List |
+| | `count()` / `countDistinct()` | Count rows / unique rows |
+| **Joins** | `inner`, `left`, `right`, `outer` | Standard joins |
+| | `left_semi`, `left_anti` | Filtered joins |
+
+---
+
+### Quick Recap
+**Date = Time Intelligence | Aggregate = Insights | Join = Relationships**
 
 
 
