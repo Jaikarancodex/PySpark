@@ -1158,6 +1158,16 @@ Formats date into custom string format.
 ```python
 df.select(date_format(col("Joining_Date"), "MMM dd, yyyy").alias("Formatted_Date")).show()
 ```
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Date & Time** | `CURRENT_DATE()` | Get current date |
+| | `DATEDIFF()` | Days between two dates |
+| | `DATE_ADD()` | Add days |
+| | `DATE_FORMAT()` | Format date string |
 
 ---
 
@@ -1216,6 +1226,15 @@ Returns total of numeric column.
 ```python
 df.groupBy("Dept").agg(sum("Salary").alias("Total_Salary")).show()
 ```
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Aggregate** | `sum()` / `avg()` / `mean()` | Total or average |
+| | `collect_list()` / `collect_set()` | List / Unique List |
+| | `count()` / `countDistinct()` | Count rows / unique rows |
 
 ---
 
@@ -1273,17 +1292,10 @@ emp_df.join(dept_df, "Dept_ID", "left_anti").show()
 
 ---
 
-## Summary Table
+## ⚡ Summary Table
 
 | Category | Function | Purpose |
 |-----------|-----------|----------|
-| **Date & Time** | `CURRENT_DATE()` | Get current date |
-| | `DATEDIFF()` | Days between two dates |
-| | `DATE_ADD()` | Add days |
-| | `DATE_FORMAT()` | Format date string |
-| **Aggregate** | `sum()` / `avg()` / `mean()` | Total or average |
-| | `collect_list()` / `collect_set()` | List / Unique List |
-| | `count()` / `countDistinct()` | Count rows / unique rows |
 | **Joins** | `inner`, `left`, `right`, `outer` | Standard joins |
 | | `left_semi`, `left_anti` | Filtered joins |
 
