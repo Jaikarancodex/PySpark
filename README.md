@@ -1209,7 +1209,7 @@ Counts total rows or values.
 df.groupBy("Dept").count().show()
 ```
 
-### 1.7 `first()` / 2.8 `last()`
+### 1.7 `first()` / 1.8 `last()`
 Return first or last value in a column.
 ```python
 df.agg(first("Salary").alias("First_Salary"), last("Salary").alias("Last_Salary")).show()
