@@ -1304,6 +1304,7 @@ emp_df.join(dept_df, "Dept_ID", "left_anti").show()
 ### Quick Recap
 **Date = Time Intelligence | Aggregate = Insights | Join = Relationships**
 
+---
 
 # 💥 Mathematical Functions
 
