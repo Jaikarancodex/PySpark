@@ -1305,4 +1305,181 @@ emp_df.join(dept_df, "Dept_ID", "left_anti").show()
 **Date = Time Intelligence | Aggregate = Insights | Join = Relationships**
 
 
+# 💥 Mathematical Functions
+
+We'll use this base DataFrame 👇
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.appName("Math_Functions").getOrCreate()
+
+data = [(1, -4.5), (2, 9.3), (3, 2.7), (4, 0.5)]
+df = spark.createDataFrame(data, ["ID", "Value"])
+df.show()
+```
+**Output:**
+```
++---+-----+
+|ID |Value|
++---+-----+
+| 1 |-4.5 |
+| 2 | 9.3 |
+| 3 | 2.7 |
+| 4 | 0.5 |
++---+-----+
+```
+
+### 1.1 `ABS()`
+Returns absolute value.
+```python
+df.select(col("ID"), abs(col("Value")).alias("Absolute")).show()
+```
+
+### 1.2 `CEIL()` / `CEILING()`
+Rounds value **up** to nearest integer.
+```python
+df.select(col("Value"), ceil(col("Value")).alias("Ceil_Value")).show()
+```
+
+### 1.3 `FLOOR()`
+Rounds value **down** to nearest integer.
+```python
+df.select(col("Value"), floor(col("Value")).alias("Floor_Value")).show()
+```
+
+### 1.4 `EXP()`
+Returns e^x (exponential value).
+```python
+df.select(col("Value"), exp(col("Value")).alias("Exponential")).show()
+```
+
+### 1.5 `LOG()`
+Returns natural logarithm (base e).
+```python
+df.select(col("Value"), log(col("Value")).alias("Log_Value")).show()
+```
+
+### 1.6 `POWER()`
+Raises value to a given power.
+```python
+df.select(col("Value"), pow(col("Value"), 2).alias("Power_2")).show()
+```
+
+### 1.7 `SQRT()`
+Returns square root.
+```python
+df.select(col("Value"), sqrt(col("Value")).alias("Square_Root")).show()
+```
+---
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Mathematical** | `ABS()` | Absolute value |
+| | `CEIL()` / `FLOOR()` | Round up/down |
+| | `EXP()` / `LOG()` | Exponential / Natural Log |
+| | `POWER()` / `SQRT()` | Power & Square root |
+
+---
+
+# 💥 Conversion Functions
+
+### 1.1 `CAST()`
+Converts one data type to another.
+
+```python
+from pyspark.sql.types import IntegerType
+
+data = [("100",), ("250",), ("400",)]
+df2 = spark.createDataFrame(data, ["Amount"])
+df2.select(col("Amount"), col("Amount").cast(IntegerType()).alias("Amount_Int")).printSchema()
+```
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Conversion** | `CAST()` | Change data type |
+
+---
+
+ **Use:** Convert string → integer, float → string, etc.
+
+---
+
+# 💥 Window Functions
+
+We'll use this base DataFrame 👇
+```python
+from pyspark.sql.window import Window
+
+data = [("Karan", "IT", 5000),
+        ("Ravi", "IT", 6000),
+        ("Neha", "HR", 5500),
+        ("Arjun", "HR", 6500),
+        ("Meena", "Finance", 7000)]
+
+df = spark.createDataFrame(data, ["Name", "Dept", "Salary"])
+windowSpec = Window.partitionBy("Dept").orderBy(col("Salary").desc())
+df.show()
+```
+
+**Output:**
+```
++------+-------+------+
+| Name | Dept  |Salary|
++------+-------+------+
+|Karan | IT    | 5000 |
+|Ravi  | IT    | 6000 |
+|Neha  | HR    | 5500 |
+|Arjun | HR    | 6500 |
+|Meena |Finance| 7000 |
++------+-------+------+
+```
+
+### 1.1 `ROW_NUMBER()`
+Gives unique sequential number per partition (no ties).
+```python
+df.withColumn("Row_Num", row_number().over(windowSpec)).show()
+```
+
+### 1.2 `RANK()`
+Gives ranking within partition — **ties get same rank, gaps follow**.
+```python
+df.withColumn("Rank", rank().over(windowSpec)).show()
+```
+
+### 1.3 `DENSE_RANK()`
+Ranks without gaps (even if values tie).
+```python
+df.withColumn("Dense_Rank", dense_rank().over(windowSpec)).show()
+```
+
+### 1.4 `LEAD()`
+Access next row’s value within same partition.
+```python
+df.withColumn("Next_Salary", lead("Salary", 1).over(windowSpec)).show()
+```
+
+### 1.5 `LAG()`
+Access previous row’s value within same partition.
+```python
+df.withColumn("Prev_Salary", lag("Salary", 1).over(windowSpec)).show()
+```
+
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Window** | `ROW_NUMBER()` | Sequential index per partition |
+| | `RANK()` / `DENSE_RANK()` | Rank with/without gaps |
+| | `LEAD()` / `LAG()` | Next / Previous row access |
+
+---
+
+### Quick Recap
+ **Math = Calculate | Conversion = Change Type | Window = Rank & Compare**
+
 
