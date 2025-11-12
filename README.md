@@ -1483,4 +1483,165 @@ df.withColumn("Prev_Salary", lag("Salary", 1).over(windowSpec)).show()
 ### Quick Recap
  **Math = Calculate | Conversion = Change Type | Window = Rank & Compare**
 
+---
+
+# 💥 Array Functions
+
+We'll use this base DataFrame 👇
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.appName("Array_Functions").getOrCreate()
+
+data = [("Karan", ["Python", "SQL", "Spark"]),
+        ("Ravi", ["Excel", "SQL"]),
+        ("Neha", ["Python", "Java"])]
+
+df = spark.createDataFrame(data, ["Name", "Skills"])
+df.show(truncate=False)
+```
+ **Output:**
+```
++-----+----------------------+
+|Name |Skills               |
++-----+----------------------+
+|Karan|[Python, SQL, Spark] |
+|Ravi |[Excel, SQL]         |
+|Neha |[Python, Java]       |
++-----+----------------------+
+```
+
+### 1.1 `ARRAY()`
+Creates an array from given columns.
+```python
+df2 = df.select(array(lit("Spark"), lit("SQL"), lit("Python")).alias("Skill_Array"))
+df2.show(truncate=False)
+```
+ **Output:** `[Spark, SQL, Python]`
+
+### 1.2 `ARRAY_CONTAINS()`
+Checks if array contains a value.
+```python
+df.select(col("Name"), array_contains(col("Skills"), "Python").alias("Knows_Python")).show()
+```
+**Output:** `True` or `False`
+
+### 1.3 `ARRAY_LENGTH()`
+Returns number of elements in array.
+```python
+df.select(col("Name"), size(col("Skills")).alias("Skill_Count")).show()
+```
+
+### 1.4 `ARRAY_POSITION()`
+Returns position of element in array (1-based index).
+```python
+df.select(col("Name"), array_position(col("Skills"), "SQL").alias("SQL_Position")).show()
+```
+
+### 1.5 `ARRAY_REMOVE()`
+Removes specific element from array.
+```python
+df.select(col("Name"), array_remove(col("Skills"), "SQL").alias("Removed_SQL")).show(truncate=False)
+```
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Array** | `ARRAY()` | Create array from values |
+| | `ARRAY_CONTAINS()` | Check if element exists |
+| | `ARRAY_LENGTH()` | Count array elements |
+| | `ARRAY_POSITION()` | Find element index |
+| | `ARRAY_REMOVE()` | Remove specific element |
+
+---
+
+# 💥 Explode Array and Maps Functions
+
+### 2.1 `explode()`
+Creates a new row for each element in an array.
+```python
+df.select(col("Name"), explode(col("Skills")).alias("Skill")).show()
+```
+ **Output:**
+```
+Karan | Python
+Karan | SQL
+Karan | Spark
+...
+```
+
+### 2.2 `explode_outer()`
+Like `explode()`, but keeps null or empty arrays as well.
+```python
+data2 = [("Karan", ["SQL", "Python"]), ("Ravi", None)]
+df2 = spark.createDataFrame(data2, ["Name", "Skills"])
+df2.select(col("Name"), explode_outer(col("Skills")).alias("Skill")).show()
+```
+
+### 2.3 `posexplode_outer()`
+Adds **position index** of each element (and includes nulls).
+```python
+df.select(col("Name"), posexplode_outer(col("Skills")).alias("Position", "Skill")).show()
+```
+ **Output:**
+```
+Karan | 0 | Python
+Karan | 1 | SQL
+Karan | 2 | Spark
+...
+```
+
+---
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Explode** | `explode()` / `explode_outer()` | Flatten array (keep nulls with outer) |
+| | `posexplode_outer()` | Flatten with element position |
+
+---
+
+# 💥 User Defined Functions (UDF)
+
+Used to define custom transformation logic.
+
+```python
+from pyspark.sql.types import StringType
+
+def categorize(skill_list):
+    if "Python" in skill_list:
+        return "Data"
+    else:
+        return "Other"
+
+category_udf = udf(categorize, StringType())
+df.withColumn("Category", category_udf(col("Skills"))).show(truncate=False)
+```
+ **Output:**
+```
++-----+----------------------+--------+
+|Name |Skills               |Category|
++-----+----------------------+--------+
+|Karan|[Python, SQL, Spark] |Data    |
+|Ravi |[Excel, SQL]         |Other   |
+|Neha |[Python, Java]       |Data    |
++-----+----------------------+--------+
+```
+
+ **Tip:** UDFs are slower — prefer built-in functions or pandas UDFs when possible.
+
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **UDF** | `udf()` | Custom function logic |
+
+---
+
+###  Quick Recap
+ **Array = Manage Lists | Explode = Flatten | UDF = Customize Logic**
+
 
