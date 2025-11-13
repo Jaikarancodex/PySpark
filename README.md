@@ -1644,4 +1644,152 @@ df.withColumn("Category", category_udf(col("Skills"))).show(truncate=False)
 ###  Quick Recap
  **Array = Manage Lists | Explode = Flatten | UDF = Customize Logic**
 
+---
+
+# 💥 Schema Definition
+
+Schemas help Spark understand data types before reading files, improving performance and ensuring data consistency.
+
+### 1.1 `Schema Definition`
+Schema defines column names and data types explicitly.
+
+```python
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("FileFormatsWithSchema").getOrCreate()
+```
+
+### 1.2 `StructType`
+Represents the overall schema structure — a collection of `StructField`s.
+
+### 1.3 `StructField`
+Defines each field’s name, type, and whether it can be null.
+
+### 1.4 `DataType`
+Specifies column type (e.g., `StringType`, `IntegerType`, `DoubleType`).
+
+**Example Schema:**
+```python
+employee_schema = StructType([
+    StructField("Emp_ID", IntegerType(), True),
+    StructField("Name", StringType(), True),
+    StructField("Dept", StringType(), True),
+    StructField("Salary", DoubleType(), True)
+])
+```
+
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Schema** | `StructType` | Define overall schema |
+| | `StructField` | Define field-level type |
+| | `DataType` | Define column type (StringType, etc.) |
+
+---
+
+# 💥 Reading Different File Formats with Schema
+
+### 2.1 Reading CSV with Schema
+```python
+df_csv = spark.read.csv("employees.csv", header=True, schema=employee_schema)
+df_csv.show()
+df_csv.printSchema()
+```
+
+**Output:**
+```
++------+-------+-------+--------+
+|Emp_ID|Name   |Dept   |Salary  |
++------+-------+-------+--------+
+|1     |Karan  |IT     |50000.0 |
+|2     |Ravi   |HR     |60000.0 |
+|3     |Neha   |Finance|70000.0 |
++------+-------+-------+--------+
+```
+
+---
+
+### 2.2 Reading Parquet
+Parquet files already store schema internally, so you don’t have to specify it explicitly.
+
+```python
+df_parquet = spark.read.parquet("employees.parquet")
+df_parquet.printSchema()
+df_parquet.show()
+```
+
+ **Tip:** Parquet is columnar, compressed, and best for large analytics workloads.
+
+---
+
+### 2.3 Reading JSON with Schema
+```python
+df_json = spark.read.schema(employee_schema).json("employees.json")
+df_json.printSchema()
+df_json.show()
+```
+
+ **Note:** Defining schema improves read performance vs. Spark’s auto-inference.
+
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Read** | `.read.csv()` | Read CSV with schema |
+| | `.read.parquet()` | Read Parquet file (auto schema) |
+| | `.read.json()` | Read JSON with schema |
+
+---
+
+# 💥 Writing Different File Formats with Schema
+
+### 3.1 Writing CSV with Schema
+Writes DataFrame to a CSV file.
+
+```python
+df_csv.write.mode("overwrite").option("header", True).csv("output/employees_csv")
+```
+
+**Output:** CSV files saved to folder `output/employees_csv/`.
+
+---
+
+### 3.2 Writing Parquet
+Parquet is default for Spark — highly optimized and efficient.
+
+```python
+df_csv.write.mode("overwrite").parquet("output/employees_parquet")
+```
+
+**Output:** Binary Parquet files with embedded schema.
+
+---
+
+### 3.3 Writing JSON with Schema
+```python
+df_csv.write.mode("overwrite").json("output/employees_json")
+```
+
+ **Output:** JSON files written to `output/employees_json/`.
+
+---
+
+## ⚡ Summary Table
+
+| Category | Function | Purpose |
+|-----------|-----------|----------|
+| **Write** | `.write.csv()` | Write DataFrame to CSV |
+| | `.write.parquet()` | Write DataFrame to Parquet |
+| | `.write.json()` | Write DataFrame to JSON |
+
+---
+
+###  Quick Recap
+**Schema = Structure | Read = Ingest | Write = Persist Efficiently**
 
