@@ -1795,11 +1795,6 @@ df_csv.write.mode("overwrite").json("output/employees_json")
 
 ---
 
-# PySpark – Write Methods, Table Types, and Data Load Strategies
-Clean, crisp explanations with examples.
-
----
-
 # 💥 WRITE METHODS
 
 ## 1.1 Overwrite
