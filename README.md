@@ -1793,3 +1793,159 @@ df_csv.write.mode("overwrite").json("output/employees_json")
 ###  Quick Recap
 **Schema = Structure | Read = Ingest | Write = Persist Efficiently**
 
+---
+
+# PySpark – Write Methods, Table Types, and Data Load Strategies
+Clean, crisp explanations with examples.
+
+---
+
+# 💥 WRITE METHODS
+
+## 1.1 Overwrite
+Overwrite replaces **all existing data** with new data.
+
+### PySpark Example
+```python
+df.write.mode("overwrite").parquet("/path/output/")
+```
+
+---
+
+## 1.2 Overwrite Partition
+Only the **targeted partitions** are overwritten.
+
+### PySpark Example
+```python
+df.write.mode("overwrite") \
+  .partitionBy("year", "month") \
+  .parquet("/path/sales/")
+```
+
+---
+
+## 1.3 Upsert (Merge)
+Upsert = Update existing rows + Insert new rows (**Delta Lake required**)
+
+### PySpark Example
+```python
+from delta.tables import DeltaTable
+
+target = DeltaTable.forPath(spark, "/delta/sales")
+
+target.alias("t") \
+  .merge(
+    df.alias("s"),
+    "t.id = s.id"
+  ) \
+  .whenMatchedUpdateAll() \
+  .whenNotMatchedInsertAll() \
+  .execute()
+```
+
+---
+
+## 1.4 Append
+Adds new data without touching existing data.
+
+### PySpark Example
+```python
+df.write.mode("append").parquet("/path/events/")
+```
+
+---
+
+# 💥 TABLE TYPES
+
+## 1.1 Managed Table
+Spark manages:
+- Data  
+- Schema  
+- Storage  
+
+Dropping table → **data deleted**
+
+### SQL Example
+```sql
+CREATE TABLE sales_managed (
+  id INT,
+  amount DOUBLE
+);
+```
+
+---
+
+## 1.2 External Table
+Spark manages only **schema**, data lives outside.
+
+Dropping table → **data NOT deleted**
+
+### SQL Example
+```sql
+CREATE TABLE sales_external (
+  id INT,
+  amount DOUBLE
+)
+LOCATION '/mnt/data/sales/';
+```
+
+---
+
+# 💥 TYPES OF LOADS
+
+## 1.1 Full Load
+Loads **entire dataset** every time.
+
+### PySpark Example
+```python
+df.write.mode("overwrite").save("/load/full/")
+```
+
+---
+
+## 1.2 Incremental Load
+Loads **only new or changed rows**.
+
+### PySpark Example
+```python
+last_ts = "2024-01-01"
+incremental_df = source_df.filter(f"updated_at > '{last_ts}'")
+```
+
+---
+
+## 1.3 Snapshot Load
+
+### 1.3.1 Full Snapshot
+```python
+df.write.mode("overwrite").save("/snapshot/")
+```
+
+### 1.3.2 Incremental Snapshot
+```python
+changes_df.write.mode("append").save("/snapshot/")
+```
+
+### 1.3.3 Rolling Snapshot
+```python
+rolling_df = df.filter("date >= current_date() - INTERVAL 30 days")
+```
+
+---
+
+## 3.4 Change Data Capture (CDC)
+Tracks INSERT, UPDATE, DELETE operations.
+
+### PySpark Example
+```python
+target.alias("t") \
+  .merge(
+    cdc_df.alias("c"),
+    "t.id = c.id"
+  ) \
+  .whenMatchedUpdateAll() \
+  .whenNotMatchedInsertAll() \
+  .execute()
+```
+
+
