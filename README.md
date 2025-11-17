@@ -1795,6 +1795,130 @@ df_csv.write.mode("overwrite").json("output/employees_json")
 
 ---
 
+# 💥 Slowly Changing Dimensions (SCD)
+Clear explanation + PySpark examples for Type 1, Type 2, Type 3.
+
+---
+
+# 💥 SCD Type 1 – Overwrite (No History)
+Old value is replaced permanently.  
+No historical record is kept.
+
+##  When to Use
+- Correcting wrong data  
+- You don't need history  
+- Dimension changes rarely matter
+
+##  Example
+| emp_id | name  | city  |
+|--------|--------|--------|
+| 101    | Karan | Pune  |
+
+##  PySpark Implementation
+```python
+from delta.tables import DeltaTable
+
+target = DeltaTable.forPath(spark, "/delta/employee")
+
+target.alias("t") \
+  .merge(
+      source.alias("s"),
+      "t.emp_id = s.emp_id"
+  ) \
+  .whenMatchedUpdateAll() \
+  .whenNotMatchedInsertAll() \
+  .execute()
+```
+
+---
+
+# 💥 SCD Type 2 – Full History (New Row Added)
+A new row is added when data changes.  
+The old row is marked as **not current**.
+
+##  When to Use
+- You need full historical tracking  
+- Changes must be auditable  
+- Common in Data Warehouses (Star Schema)
+
+##  Example
+| emp_id | name  | city   | start_date | end_date | is_current |
+|--------|--------|--------|------------|-----------|-------------|
+| 101    | Karan | Mumbai | 2023       | 2024      | N           |
+| 101    | Karan | Pune   | 2024       | NULL      | Y           |
+
+##  PySpark Implementation (Delta Lake)
+```python
+from delta.tables import DeltaTable
+from pyspark.sql.functions import current_date
+
+target = DeltaTable.forPath(spark, "/delta/employee")
+
+# close existing active row
+target.update(
+    condition = "emp_id = 101 AND is_current = true",
+    set = { "is_current": "false", "end_date": "current_date()" }
+)
+
+# insert new record
+new_record = source_df.withColumn("start_date", current_date()) \
+                      .withColumn("end_date", lit(None)) \
+                      .withColumn("is_current", lit(True))
+
+new_record.write.mode("append").format("delta").save("/delta/employee")
+```
+
+---
+
+# 💥 SCD Type 3 – Limited History (One Previous Value)
+Stores only **current** and **previous** values.  
+Does NOT store full multi-step history.
+
+##  When to Use
+- Tracking last change only  
+- Useful when history is needed but limited  
+- Smaller storage cost vs Type 2
+
+##  Example
+| emp_id | city_current | city_previous |
+|--------|---------------|----------------|
+| 101    | Pune          | Mumbai         |
+
+##  PySpark Implementation
+```python
+from delta.tables import DeltaTable
+
+target = DeltaTable.forPath(spark, "/delta/employee")
+
+target.alias("t") \
+  .merge(
+      source.alias("s"),
+      "t.emp_id = s.emp_id"
+  ) \
+  .whenMatchedUpdate(set={
+      "city_previous": "t.city_current",
+      "city_current": "s.city"
+  }) \
+  .whenNotMatchedInsert(values={
+      "emp_id": "s.emp_id",
+      "city_current": "s.city",
+      "city_previous": "null"
+  }) \
+  .execute()
+```
+
+---
+
+## ⚡ Summary Table
+
+| SCD Type | History | How Data is Stored | Use Case |
+|----------|---------|---------------------|-----------|
+| **Type 1** | ❌ No | Overwrite | Correct wrong data |
+| **Type 2** | ✅ Full | New row per change | Audit, reporting |
+| **Type 3** | ⚠ Partial | Current + Previous | Limited history |
+
+---
+
 # 💥 WRITE METHODS
 
 ## 1.1 Overwrite
